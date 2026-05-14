@@ -15,6 +15,8 @@ For Japanese documentation, see [README_jp.md](./README_jp.md).
 - Uses the Unity Editor display language for labels
 - Uses Unity's supported `MainToolbar` API
 
+Note: the only "rainbow" behavior is the icon color randomization.
+
 ## Requirements
 
 - Unity 6
