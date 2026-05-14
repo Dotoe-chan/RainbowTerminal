@@ -1,5 +1,5 @@
 <p align="center">
-<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/28bbad28-d577-408b-bf8a-1c10ee0f1a8b" />
+<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/d26556ab-f823-458c-8ed8-3dc55b7b4863" />
 </p>
 
 日本語版ドキュメントです。英語版は [README.md](./README.md) を参照してください。
@@ -15,7 +15,7 @@
 - Unity Editor の表示言語に合わせて文言を切り替え
 - Unity の正式な `MainToolbar` API を使用
 
--# 「れいんぼー」な要素はアイコン色がランダム変更するのみです
+※ 「れいんぼー」な要素はアイコン色がランダム変更するのみです
 
 ## Requirements
 

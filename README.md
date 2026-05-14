@@ -16,7 +16,7 @@
 - Uses Unity's supported `MainToolbar` API
 
 Note: the only "rainbow" behavior is the icon color randomization.
-
+ 
 ## Requirements
 
 - Unity 6
