@@ -84,7 +84,6 @@ Displayed text follows the Unity Editor language.
 ## Notes
 
 - Editor only
-- Windows only
 - Uses Unity's supported main toolbar extension API
 - Does not implement arbitrary background styling or freeform multi-image layout inside the button
 
