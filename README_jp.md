@@ -6,6 +6,8 @@ You want English? see [README.md](./README.md)
 
 `RainbowTerminal` は、Unity 6 のメインツールバーに `terminal` ボタンを追加する Editor 拡張です。
 
+<img width="546" height="50" alt="image" src="https://github.com/user-attachments/assets/70b00e66-48e6-4509-bbfe-5925be4ae84a" />
+
 ## 機能
 
 - Unity Editor のメインツールバーにボタンを追加
