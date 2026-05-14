@@ -85,7 +85,6 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 ## メモ
 
 - Editor 専用です
-- Windows 専用です
 - Unity の正式なメインツールバー拡張 API を使っています
 
 ## トラブルシューティング
