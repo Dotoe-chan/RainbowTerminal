@@ -30,6 +30,16 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 After adding it, run `Assets > Refresh` in Unity.
 If the button does not appear, restart the Unity Editor.
 
+You can also add it as a UPM package from Git URL:
+
+```json
+{
+  "dependencies": {
+    "com.dotoe.rainbow-terminal": "https://github.com/Dotoe-chan/RainbowTerminal.git"
+  }
+}
+```
+
 ## Behavior
 
 - Shows `terminal` in English or `ターミナル` in Japanese
@@ -48,6 +58,7 @@ Displayed text follows the Unity Editor language.
 
 ## Files
 
+- `package.json`
 - `Editor/RainbowCommitHeaderButton.cs`
 - `Editor/RainbowTerminal.Editor.asmdef`
 - `Editor/AssemblyInfo.cs`

@@ -30,6 +30,16 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 追加後に Unity で `Assets > Refresh` を実行してください。
 表示されない場合は Unity Editor を再起動してください。
 
+UPM パッケージとして Git URL から追加することもできます。
+
+```json
+{
+  "dependencies": {
+    "com.dotoe.rainbow-terminal": "https://github.com/Dotoe-chan/RainbowTerminal.git"
+  }
+}
+```
+
 ## Behavior
 
 - 英語環境では `terminal`、日本語環境では `ターミナル` と表示
@@ -48,6 +58,7 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 
 ## Files
 
+- `package.json`
 - `Editor/RainbowCommitHeaderButton.cs`
 - `Editor/RainbowTerminal.Editor.asmdef`
 - `Editor/AssemblyInfo.cs`
