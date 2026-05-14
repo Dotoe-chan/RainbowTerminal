@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEditor.Toolbars;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,43 +13,54 @@ namespace RainbowCommitNag.Editor
     [InitializeOnLoad]
     internal static class RainbowCommitHeaderButton
     {
-        private const string RootElementName = "rainbow-commit-nag-root";
-        private const string ButtonElementName = "rainbow-commit-nag-button";
+        private const string ToolbarPath = "Rainbow Commit Nag/Commit Goblin";
         private const double ReminderIntervalSeconds = 600d;
         private const double FlashDurationSeconds = 8d;
-        private const double MessageSwapSeconds = 0.8d;
+        private const double FlashRefreshSeconds = 0.12d;
 
         private static readonly string[] FlashMessages =
         {
-            "SAVE. COMMIT. ASCEND.",
-            "UNSAVED CHAOS DETECTED",
+            "SAVE NOW",
+            "COMMIT NOW",
             "GIT HUNGERS",
-            "COMMIT BEFORE REGRET",
-            "CTRL+S IS NOT A PERSONALITY",
-            "HISTORY WANTS A NEW ENTRY"
+            "VERSION YOUR SINS",
+            "CHECKPOINT OR CHAOS",
+            "CTRL+S THEN GIT"
         };
 
-        private static readonly string[] CalmMessages =
-        {
-            "Commit Goblin",
-            "Version Your Sins",
-            "History Awaits",
-            "Save Before Chaos"
-        };
+        private static readonly Dictionary<int, Texture2D> IconCache = new();
 
-        private static VisualElement s_Root;
-        private static Button s_Button;
         private static double s_NextReminderTime;
         private static double s_FlashUntilTime;
-        private static double s_NextMessageSwapTime;
-        private static int s_MessageIndex;
+        private static double s_NextRefreshTime;
+        private static bool s_WasFlashing;
 
         static RainbowCommitHeaderButton()
         {
             s_NextReminderTime = EditorApplication.timeSinceStartup + ReminderIntervalSeconds;
             EditorApplication.update += Update;
-            AssemblyReloadEvents.beforeAssemblyReload += Cleanup;
             EditorApplication.quitting += Cleanup;
+        }
+
+        [MainToolbarElement(
+            ToolbarPath,
+            defaultDockPosition = MainToolbarDockPosition.Right,
+            defaultDockIndex = 0)]
+        private static MainToolbarElement CreateToolbarElement()
+        {
+            var flashing = IsFlashing();
+            var icon = CreateIcon(flashing ? EvaluateFlashColor() : new Color(0.28f, 0.82f, 0.45f, 1f));
+            var content = new MainToolbarContent(
+                flashing ? CurrentFlashMessage() : "Commit Goblin",
+                icon,
+                BuildTooltip(flashing));
+
+            return new MainToolbarButton(content, OnButtonClicked)
+            {
+                populateContextMenu = PopulateContextMenu,
+                enabled = true,
+                displayed = true
+            };
         }
 
         [MenuItem("Tools/Rainbow Commit Nag/Flash Now")]
@@ -62,106 +74,32 @@ namespace RainbowCommitNag.Editor
         {
             s_FlashUntilTime = 0d;
             s_NextReminderTime = EditorApplication.timeSinceStartup + ReminderIntervalSeconds;
-            UpdateVisuals(forceMessageRefresh: true);
+            MainToolbar.Refresh(ToolbarPath);
         }
 
         private static void Update()
         {
-            EnsureAttached();
-            UpdateReminderState();
-            UpdateVisuals(forceMessageRefresh: false);
-        }
-
-        private static void EnsureAttached()
-        {
-            if (s_Root != null && s_Root.panel != null)
-            {
-                return;
-            }
-
-            var toolbarRoot = FindToolbarRoot();
-            if (toolbarRoot == null)
-            {
-                return;
-            }
-
-            var rightZone = toolbarRoot.Q("ToolbarZoneRightAlign") ??
-                            toolbarRoot.Q("ToolbarZonePlayMode") ??
-                            toolbarRoot;
-            var existingRoot = rightZone.Q<VisualElement>(RootElementName);
-            if (existingRoot != null)
-            {
-                s_Root = existingRoot;
-                s_Button = existingRoot.Q<Button>(ButtonElementName);
-                return;
-            }
-
-            s_Root = new VisualElement
-            {
-                name = RootElementName
-            };
-            s_Root.style.flexDirection = FlexDirection.Row;
-            s_Root.style.alignItems = Align.Center;
-            s_Root.style.justifyContent = Justify.Center;
-            s_Root.style.marginLeft = 6;
-            s_Root.style.marginRight = 6;
-            s_Root.style.paddingLeft = 0;
-            s_Root.style.paddingRight = 0;
-
-            s_Button = new Button(OnButtonClicked)
-            {
-                name = ButtonElementName
-            };
-            s_Button.style.minWidth = 162;
-            s_Button.style.height = 24;
-            s_Button.style.paddingLeft = 10;
-            s_Button.style.paddingRight = 10;
-            s_Button.style.marginTop = 0;
-            s_Button.style.marginBottom = 0;
-            s_Button.style.borderTopLeftRadius = 12;
-            s_Button.style.borderTopRightRadius = 12;
-            s_Button.style.borderBottomLeftRadius = 12;
-            s_Button.style.borderBottomRightRadius = 12;
-            s_Button.style.borderTopWidth = 2;
-            s_Button.style.borderBottomWidth = 2;
-            s_Button.style.borderLeftWidth = 2;
-            s_Button.style.borderRightWidth = 2;
-            s_Button.style.unityFontStyleAndWeight = FontStyle.Bold;
-            s_Button.style.unityTextAlign = TextAnchor.MiddleCenter;
-
-            s_Root.Add(s_Button);
-            rightZone.Add(s_Root);
-            UpdateVisuals(forceMessageRefresh: true);
-        }
-
-        private static VisualElement FindToolbarRoot()
-        {
-            var toolbarType = Type.GetType("UnityEditor.Toolbar, UnityEditor");
-            if (toolbarType == null)
-            {
-                return null;
-            }
-
-            var toolbars = Resources.FindObjectsOfTypeAll(toolbarType);
-            if (toolbars == null || toolbars.Length == 0)
-            {
-                return null;
-            }
-
-            var toolbar = toolbars[0];
-            var rootField = toolbarType.GetField("m_Root", BindingFlags.Instance | BindingFlags.NonPublic);
-            return rootField?.GetValue(toolbar) as VisualElement;
-        }
-
-        private static void UpdateReminderState()
-        {
             var now = EditorApplication.timeSinceStartup;
-            if (now < s_NextReminderTime)
+            if (now >= s_NextReminderTime && !IsFlashing())
             {
-                return;
+                StartFlash();
             }
 
-            StartFlash();
+            var flashing = IsFlashing();
+            if (flashing)
+            {
+                if (now >= s_NextRefreshTime)
+                {
+                    s_NextRefreshTime = now + FlashRefreshSeconds;
+                    MainToolbar.Refresh(ToolbarPath);
+                }
+            }
+            else if (s_WasFlashing)
+            {
+                MainToolbar.Refresh(ToolbarPath);
+            }
+
+            s_WasFlashing = flashing;
         }
 
         private static void StartFlash()
@@ -169,73 +107,88 @@ namespace RainbowCommitNag.Editor
             var now = EditorApplication.timeSinceStartup;
             s_FlashUntilTime = now + FlashDurationSeconds;
             s_NextReminderTime = now + ReminderIntervalSeconds;
-            s_NextMessageSwapTime = now;
-            s_MessageIndex++;
-            UpdateVisuals(forceMessageRefresh: true);
+            s_NextRefreshTime = now;
+            MainToolbar.Refresh(ToolbarPath);
         }
 
-        private static void UpdateVisuals(bool forceMessageRefresh)
+        private static bool IsFlashing()
         {
-            if (s_Button == null)
-            {
-                return;
-            }
-
-            var now = EditorApplication.timeSinceStartup;
-            var isFlashing = now < s_FlashUntilTime;
-
-            if (isFlashing)
-            {
-                if (forceMessageRefresh || now >= s_NextMessageSwapTime)
-                {
-                    s_MessageIndex++;
-                    s_NextMessageSwapTime = now + MessageSwapSeconds;
-                }
-
-                var hue = Mathf.Repeat((float)(now * 0.18d), 1f);
-                var accent = Color.HSVToRGB(hue, 0.82f, 1f);
-                var accentDark = Color.HSVToRGB(Mathf.Repeat(hue + 0.08f, 1f), 0.95f, 0.35f);
-                var glow = 1f + Mathf.Sin((float)(now * 7d)) * 0.08f;
-
-                s_Button.text = FlashMessages[s_MessageIndex % FlashMessages.Length];
-                s_Button.style.backgroundColor = accent;
-                s_Button.style.borderTopColor = Color.white;
-                s_Button.style.borderBottomColor = accentDark;
-                s_Button.style.borderLeftColor = Color.white;
-                s_Button.style.borderRightColor = accentDark;
-                s_Button.style.color = accentDark.grayscale > 0.45f ? Color.black : Color.white;
-                s_Button.style.scale = new Scale(new Vector3(glow, glow, 1f));
-            }
-            else
-            {
-                var calmIndex = Mathf.Abs((int)(now / 30d)) % CalmMessages.Length;
-                s_Button.text = CalmMessages[calmIndex];
-                s_Button.style.backgroundColor = new Color(0.16f, 0.18f, 0.22f, 0.92f);
-                s_Button.style.borderTopColor = new Color(0.45f, 0.49f, 0.56f, 1f);
-                s_Button.style.borderBottomColor = new Color(0.08f, 0.09f, 0.11f, 1f);
-                s_Button.style.borderLeftColor = new Color(0.45f, 0.49f, 0.56f, 1f);
-                s_Button.style.borderRightColor = new Color(0.08f, 0.09f, 0.11f, 1f);
-                s_Button.style.color = new Color(0.93f, 0.95f, 0.98f, 1f);
-                s_Button.style.scale = new Scale(Vector3.one);
-            }
-
-            s_Button.tooltip = BuildTooltip(isFlashing);
+            return EditorApplication.timeSinceStartup < s_FlashUntilTime;
         }
 
-        private static string BuildTooltip(bool isFlashing)
+        private static string CurrentFlashMessage()
+        {
+            var index = (int)(EditorApplication.timeSinceStartup / 0.8d) % FlashMessages.Length;
+            return FlashMessages[index];
+        }
+
+        private static Color EvaluateFlashColor()
+        {
+            var hue = Mathf.Repeat((float)(EditorApplication.timeSinceStartup * 0.35d), 1f);
+            return Color.HSVToRGB(hue, 0.85f, 1f);
+        }
+
+        private static Texture2D CreateIcon(Color color)
+        {
+            var key = QuantizeColor(color);
+            if (IconCache.TryGetValue(key, out var cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var texture = new Texture2D(16, 16, TextureFormat.RGBA32, false)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            var pixels = new Color[16 * 16];
+            var border = Color.Lerp(color, Color.white, 0.45f);
+            var dark = Color.Lerp(color, Color.black, 0.35f);
+            for (var y = 0; y < 16; y++)
+            {
+                for (var x = 0; x < 16; x++)
+                {
+                    var isBorder = x == 0 || y == 0 || x == 15 || y == 15;
+                    var isGlow = x is > 2 and < 13 && y is > 2 and < 13;
+                    pixels[(y * 16) + x] = isBorder ? border : (isGlow ? color : dark);
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply(false, true);
+            IconCache[key] = texture;
+            return texture;
+        }
+
+        private static int QuantizeColor(Color color)
+        {
+            var r = Mathf.Clamp(Mathf.RoundToInt(color.r * 15f), 0, 15);
+            var g = Mathf.Clamp(Mathf.RoundToInt(color.g * 15f), 0, 15);
+            var b = Mathf.Clamp(Mathf.RoundToInt(color.b * 15f), 0, 15);
+            return (r << 8) | (g << 4) | b;
+        }
+
+        private static string BuildTooltip(bool flashing)
         {
             var repoRoot = TryFindGitRoot();
             var gitState = repoRoot == null ? "git: not found" : ReadGitStatus(repoRoot);
-            var scenesDirty = AnySceneDirty() ? "unsaved scene changes: yes" : "unsaved scene changes: no";
             var nextAt = DateTime.Now.AddSeconds(Math.Max(0d, s_NextReminderTime - EditorApplication.timeSinceStartup));
 
             return
-                "10-minute rainbow save/commit nuisance\n" +
-                $"{scenesDirty}\n" +
+                "10-minute save/commit goblin\n" +
+                $"unsaved scene changes: {(AnySceneDirty() ? "yes" : "no")}\n" +
                 $"{gitState}\n" +
-                $"flashing: {(isFlashing ? "yes" : "no")}\n" +
+                $"flashing: {(flashing ? "yes" : "no")}\n" +
                 $"next nag: {nextAt:HH:mm:ss}\n" +
                 "click: save now and copy suggested git commands";
+        }
+
+        private static void PopulateContextMenu(DropdownMenu menu)
+        {
+            menu.AppendAction("Flash Now", _ => FlashNow());
+            menu.AppendAction("Snooze 10 Minutes", _ => Snooze());
         }
 
         private static void OnButtonClicked()
@@ -360,13 +313,15 @@ namespace RainbowCommitNag.Editor
 
         private static void Cleanup()
         {
-            if (s_Root != null)
+            foreach (var pair in IconCache)
             {
-                s_Root.RemoveFromHierarchy();
+                if (pair.Value != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(pair.Value);
+                }
             }
 
-            s_Root = null;
-            s_Button = null;
+            IconCache.Clear();
         }
     }
 }
