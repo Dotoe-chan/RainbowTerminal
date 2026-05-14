@@ -1,6 +1,6 @@
 {
   "name": "com.dotoe.rainbow-terminal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "RainbowTerminal",
   "description": "Adds a terminal button to the Unity 6 main toolbar and opens a terminal at the current project root.",
   "unity": "6000.0",

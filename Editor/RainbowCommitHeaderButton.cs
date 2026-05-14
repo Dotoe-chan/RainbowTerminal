@@ -102,6 +102,13 @@ namespace RainbowTerminal.Editor
         private static void OpenTerminal()
         {
             var workingDirectory = GetProjectRootPath();
+
+            if (Application.platform == RuntimePlatform.OSXEditor)
+            {
+                TryOpenMacTerminal(workingDirectory);
+                return;
+            }
+
             if (TryOpenWindowsTerminal(workingDirectory))
             {
                 return;
@@ -121,6 +128,30 @@ namespace RainbowTerminal.Editor
                     Arguments = $"-d \"{workingDirectory}\"",
                     WorkingDirectory = workingDirectory,
                     UseShellExecute = true
+                };
+
+                return process.Start();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryOpenMacTerminal(string workingDirectory)
+        {
+            try
+            {
+                using var process = new Process();
+                var appleScriptPath = EscapeAppleScriptString(workingDirectory);
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "osascript",
+                    Arguments =
+                        $"-e \"tell application \\\"Terminal\\\" to do script \\\"cd \\\" & quoted form of \\\"{appleScriptPath}\\\"\" " +
+                        "-e \"tell application \\\"Terminal\\\" to activate\"",
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = false
                 };
 
                 return process.Start();
@@ -151,6 +182,11 @@ namespace RainbowTerminal.Editor
             {
                 return false;
             }
+        }
+
+        private static string EscapeAppleScriptString(string value)
+        {
+            return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
         }
 
         private static string GetProjectRootPath()
