@@ -1,4 +1,6 @@
-# RainbowTerminal
+<p align="center">
+<img width="640" height="240" alt="Rain2" src="https://github.com/user-attachments/assets/e9221e69-fdc0-4242-97cc-29a26f53a96f" />
+</p>
 
 `RainbowTerminal` is a Unity 6 editor extension that adds a `terminal` button to the main toolbar.
 
