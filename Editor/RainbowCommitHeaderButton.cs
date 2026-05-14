@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -15,7 +14,6 @@ namespace RainbowTerminal.Editor
         private const string ToolbarPath = "Rainbow Terminal/terminal";
 
         private static readonly Dictionary<int, Texture2D> IconCache = new();
-
         private static Color s_CurrentColor = new(0.28f, 0.82f, 0.45f, 1f);
 
         static RainbowCommitHeaderButton()
@@ -29,11 +27,10 @@ namespace RainbowTerminal.Editor
             defaultDockIndex = 0)]
         private static MainToolbarElement CreateToolbarElement()
         {
-            var icon = CreateIcon(s_CurrentColor);
             var content = new MainToolbarContent(
-                "terminal",
-                icon,
-                BuildTooltip());
+                L10n.Tr("terminal"),
+                CreateIcon(s_CurrentColor),
+                string.Empty);
 
             return new MainToolbarButton(content, OnButtonClicked)
             {
@@ -85,23 +82,9 @@ namespace RainbowTerminal.Editor
             return (r << 8) | (g << 4) | b;
         }
 
-        private static string BuildTooltip()
-        {
-            var repoRoot = TryFindGitRoot();
-            var gitState = repoRoot == null ? "git: not found" : ReadGitStatus(repoRoot);
-
-            return
-                "terminal shortcut\n" +
-                $"{gitState}\n" +
-                "click: open terminal in this Unity project\n" +
-                "click side effect: randomize icon color";
-        }
-
         private static void PopulateContextMenu(DropdownMenu menu)
         {
-            menu.AppendAction("Open Terminal", _ => OnButtonClicked());
-            menu.AppendAction("Randomize Color", _ => RandomizeColor());
-            menu.AppendAction("Reset Color", _ => ResetColor());
+            menu.AppendAction(L10n.Tr("Open Terminal"), _ => OnButtonClicked());
         }
 
         private static void OnButtonClicked()
@@ -112,20 +95,13 @@ namespace RainbowTerminal.Editor
 
         private static void RandomizeColor()
         {
-            s_CurrentColor = Color.HSVToRGB(UnityEngine.Random.value, 0.8f, 1f);
-            MainToolbar.Refresh(ToolbarPath);
-        }
-
-        private static void ResetColor()
-        {
-            s_CurrentColor = new Color(0.28f, 0.82f, 0.45f, 1f);
+            s_CurrentColor = Color.HSVToRGB(Random.value, 0.8f, 1f);
             MainToolbar.Refresh(ToolbarPath);
         }
 
         private static void OpenTerminal()
         {
             var workingDirectory = GetProjectRootPath();
-
             if (TryOpenWindowsTerminal(workingDirectory))
             {
                 return;
@@ -182,74 +158,13 @@ namespace RainbowTerminal.Editor
             return Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
         }
 
-        private static string TryFindGitRoot()
-        {
-            var directory = new DirectoryInfo(GetProjectRootPath());
-            while (directory != null)
-            {
-                if (Directory.Exists(Path.Combine(directory.FullName, ".git")))
-                {
-                    return directory.FullName;
-                }
-
-                directory = directory.Parent;
-            }
-
-            return null;
-        }
-
-        private static string ReadGitStatus(string workingDirectory)
-        {
-            try
-            {
-                using var process = new Process();
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = "git",
-                    Arguments = "status --short --branch",
-                    WorkingDirectory = workingDirectory,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                process.Start();
-                if (!process.WaitForExit(1500))
-                {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch
-                    {
-                    }
-
-                    return "git: status timed out";
-                }
-
-                var output = process.StandardOutput.ReadToEnd().Trim();
-                var error = process.StandardError.ReadToEnd().Trim();
-                if (!string.IsNullOrWhiteSpace(output))
-                {
-                    return output.Replace(Environment.NewLine, " | ");
-                }
-
-                return string.IsNullOrWhiteSpace(error) ? "git: clean enough, apparently" : $"git: {error}";
-            }
-            catch (Exception exception)
-            {
-                return $"git: {exception.GetType().Name}";
-            }
-        }
-
         private static void Cleanup()
         {
             foreach (var pair in IconCache)
             {
                 if (pair.Value != null)
                 {
-                    UnityEngine.Object.DestroyImmediate(pair.Value);
+                    Object.DestroyImmediate(pair.Value);
                 }
             }
 
