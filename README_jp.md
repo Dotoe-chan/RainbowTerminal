@@ -15,6 +15,8 @@
 - Unity Editor の表示言語に合わせて文言を切り替え
 - Unity の正式な `MainToolbar` API を使用
 
+-# 「れいんぼー」な要素はアイコン色がランダム変更するのみです
+
 ## Requirements
 
 - Unity 6
