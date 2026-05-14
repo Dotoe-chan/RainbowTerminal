@@ -2,6 +2,8 @@
 <img width="640" height="240" alt="Rain2" src="https://github.com/user-attachments/assets/e9221e69-fdc0-4242-97cc-29a26f53a96f" />
 </p>
 
+For Japanese documentation, see [README_jp.md](./README_jp.md).
+
 `RainbowTerminal` is a Unity 6 editor extension that adds a `terminal` button to the main toolbar.
 
 ## Features
@@ -30,7 +32,18 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 After adding it, run `Assets > Refresh` in Unity.
 If the button does not appear, restart the Unity Editor.
 
-You can also add it as a UPM package from Git URL:
+You can also add it directly from Unity Package Manager:
+
+1. Open `Window > Package Manager`
+2. Click the `+` button
+3. Choose `Add package from git URL...`
+4. Copy and paste this URL:
+
+```text
+https://github.com/Dotoe-chan/RainbowTerminal.git
+```
+
+You can also add it by editing `Packages/manifest.json`:
 
 ```json
 {

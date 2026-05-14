@@ -2,6 +2,8 @@
 <img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/d26556ab-f823-458c-8ed8-3dc55b7b4863" />
 </p>
 
+日本語版ドキュメントです。英語版は [README.md](./README.md) を参照してください。
+
 `RainbowTerminal` は、Unity 6 のメインツールバーに `terminal` ボタンを追加する Editor 拡張です。
 
 ## Features
@@ -9,7 +11,7 @@
 - Unity Editor のメインツールバーにボタンを追加
 - クリックで現在開いている Unity プロジェクト root に terminal を開く
 - `wt.exe` が使えない場合は PowerShell にフォールバック
-- クリックごとにアイコン色がレインボーに変化する
+- クリックごとにアイコン色をランダム変更
 - Unity Editor の表示言語に合わせて文言を切り替え
 - Unity の正式な `MainToolbar` API を使用
 
@@ -21,7 +23,7 @@
 
 ## Installation
 
-Git submodule として追加するのがおすすめです
+Git submodule として追加する場合:
 
 ```bash
 git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodules/RainbowTerminal
@@ -30,7 +32,18 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 追加後に Unity で `Assets > Refresh` を実行してください。
 表示されない場合は Unity Editor を再起動してください。
 
-UPM パッケージとして Git URL から追加することもできます。
+Unity Package Manager から追加する場合:
+
+1. `Window > Package Manager` を開く
+2. `+` ボタンを押す
+3. `Add package from git URL...` を選ぶ
+4. 下の URL をそのまま貼り付ける
+
+```text
+https://github.com/Dotoe-chan/RainbowTerminal.git
+```
+
+`Packages/manifest.json` を直接編集して追加することもできます。
 
 ```json
 {
