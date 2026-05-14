@@ -1,5 +1,5 @@
 <p align="center">
-<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/d26556ab-f823-458c-8ed8-3dc55b7b4863" />
+<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/28bbad28-d577-408b-bf8a-1c10ee0f1a8b" />
 </p>
 
 日本語版ドキュメントです。英語版は [README.md](./README.md) を参照してください。
