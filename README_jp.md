@@ -1,4 +1,6 @@
-# RainbowTerminal
+<p align="center">
+<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/d26556ab-f823-458c-8ed8-3dc55b7b4863" />
+</p>
 
 `RainbowTerminal` は、Unity 6 のメインツールバーに `terminal` ボタンを追加する Editor 拡張です。
 
@@ -7,7 +9,7 @@
 - Unity Editor のメインツールバーにボタンを追加
 - クリックで現在開いている Unity プロジェクト root に terminal を開く
 - `wt.exe` が使えない場合は PowerShell にフォールバック
-- クリックごとにアイコン色をランダム変更
+- クリックごとにアイコン色がレインボーに変化する
 - Unity Editor の表示言語に合わせて文言を切り替え
 - Unity の正式な `MainToolbar` API を使用
 
@@ -19,7 +21,7 @@
 
 ## Installation
 
-Git submodule として追加します。
+Git submodule として追加するのがおすすめです
 
 ```bash
 git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodules/RainbowTerminal
