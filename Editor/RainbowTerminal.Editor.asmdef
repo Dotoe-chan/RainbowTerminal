@@ -1,6 +1,6 @@
 {
-  "name": "RainbowCommitNag.Editor",
-  "rootNamespace": "RainbowCommitNag.Editor",
+  "name": "RainbowTerminal.Editor",
+  "rootNamespace": "RainbowTerminal.Editor",
   "references": [],
   "includePlatforms": [
     "Editor"

@@ -3,42 +3,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEditor.Toolbars;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace RainbowCommitNag.Editor
+namespace RainbowTerminal.Editor
 {
     [InitializeOnLoad]
     internal static class RainbowCommitHeaderButton
     {
-        private const string ToolbarPath = "Rainbow Commit Nag/Commit Goblin";
-        private const double ReminderIntervalSeconds = 600d;
-        private const double FlashDurationSeconds = 8d;
-        private const double FlashRefreshSeconds = 0.12d;
-
-        private static readonly string[] FlashMessages =
-        {
-            "SAVE NOW",
-            "COMMIT NOW",
-            "GIT HUNGERS",
-            "VERSION YOUR SINS",
-            "CHECKPOINT OR CHAOS",
-            "CTRL+S THEN GIT"
-        };
+        private const string ToolbarPath = "Rainbow Terminal/terminal";
 
         private static readonly Dictionary<int, Texture2D> IconCache = new();
 
-        private static double s_NextReminderTime;
-        private static double s_FlashUntilTime;
-        private static double s_NextRefreshTime;
-        private static bool s_WasFlashing;
+        private static Color s_CurrentColor = new(0.28f, 0.82f, 0.45f, 1f);
 
         static RainbowCommitHeaderButton()
         {
-            s_NextReminderTime = EditorApplication.timeSinceStartup + ReminderIntervalSeconds;
-            EditorApplication.update += Update;
             EditorApplication.quitting += Cleanup;
         }
 
@@ -48,12 +29,11 @@ namespace RainbowCommitNag.Editor
             defaultDockIndex = 0)]
         private static MainToolbarElement CreateToolbarElement()
         {
-            var flashing = IsFlashing();
-            var icon = CreateIcon(flashing ? EvaluateFlashColor() : new Color(0.28f, 0.82f, 0.45f, 1f));
+            var icon = CreateIcon(s_CurrentColor);
             var content = new MainToolbarContent(
-                flashing ? CurrentFlashMessage() : "Commit Goblin",
+                "terminal",
                 icon,
-                BuildTooltip(flashing));
+                BuildTooltip());
 
             return new MainToolbarButton(content, OnButtonClicked)
             {
@@ -61,71 +41,6 @@ namespace RainbowCommitNag.Editor
                 enabled = true,
                 displayed = true
             };
-        }
-
-        [MenuItem("Tools/Rainbow Commit Nag/Flash Now")]
-        private static void FlashNow()
-        {
-            StartFlash();
-        }
-
-        [MenuItem("Tools/Rainbow Commit Nag/Snooze 10 Minutes")]
-        private static void Snooze()
-        {
-            s_FlashUntilTime = 0d;
-            s_NextReminderTime = EditorApplication.timeSinceStartup + ReminderIntervalSeconds;
-            MainToolbar.Refresh(ToolbarPath);
-        }
-
-        private static void Update()
-        {
-            var now = EditorApplication.timeSinceStartup;
-            if (now >= s_NextReminderTime && !IsFlashing())
-            {
-                StartFlash();
-            }
-
-            var flashing = IsFlashing();
-            if (flashing)
-            {
-                if (now >= s_NextRefreshTime)
-                {
-                    s_NextRefreshTime = now + FlashRefreshSeconds;
-                    MainToolbar.Refresh(ToolbarPath);
-                }
-            }
-            else if (s_WasFlashing)
-            {
-                MainToolbar.Refresh(ToolbarPath);
-            }
-
-            s_WasFlashing = flashing;
-        }
-
-        private static void StartFlash()
-        {
-            var now = EditorApplication.timeSinceStartup;
-            s_FlashUntilTime = now + FlashDurationSeconds;
-            s_NextReminderTime = now + ReminderIntervalSeconds;
-            s_NextRefreshTime = now;
-            MainToolbar.Refresh(ToolbarPath);
-        }
-
-        private static bool IsFlashing()
-        {
-            return EditorApplication.timeSinceStartup < s_FlashUntilTime;
-        }
-
-        private static string CurrentFlashMessage()
-        {
-            var index = (int)(EditorApplication.timeSinceStartup / 0.8d) % FlashMessages.Length;
-            return FlashMessages[index];
-        }
-
-        private static Color EvaluateFlashColor()
-        {
-            var hue = Mathf.Repeat((float)(EditorApplication.timeSinceStartup * 0.35d), 1f);
-            return Color.HSVToRGB(hue, 0.85f, 1f);
         }
 
         private static Texture2D CreateIcon(Color color)
@@ -170,75 +85,106 @@ namespace RainbowCommitNag.Editor
             return (r << 8) | (g << 4) | b;
         }
 
-        private static string BuildTooltip(bool flashing)
+        private static string BuildTooltip()
         {
             var repoRoot = TryFindGitRoot();
             var gitState = repoRoot == null ? "git: not found" : ReadGitStatus(repoRoot);
-            var nextAt = DateTime.Now.AddSeconds(Math.Max(0d, s_NextReminderTime - EditorApplication.timeSinceStartup));
 
             return
-                "10-minute save/commit goblin\n" +
-                $"unsaved scene changes: {(AnySceneDirty() ? "yes" : "no")}\n" +
+                "terminal shortcut\n" +
                 $"{gitState}\n" +
-                $"flashing: {(flashing ? "yes" : "no")}\n" +
-                $"next nag: {nextAt:HH:mm:ss}\n" +
-                "click: save now and copy suggested git commands";
+                "click: open terminal in this Unity project\n" +
+                "click side effect: randomize icon color";
         }
 
         private static void PopulateContextMenu(DropdownMenu menu)
         {
-            menu.AppendAction("Flash Now", _ => FlashNow());
-            menu.AppendAction("Snooze 10 Minutes", _ => Snooze());
+            menu.AppendAction("Open Terminal", _ => OnButtonClicked());
+            menu.AppendAction("Randomize Color", _ => RandomizeColor());
+            menu.AppendAction("Reset Color", _ => ResetColor());
         }
 
         private static void OnButtonClicked()
         {
-            SaveEverything();
-
-            var repoRoot = TryFindGitRoot();
-            var suggestedCommit = SuggestCommitMessage();
-            var commandText = $"git add .{Environment.NewLine}git commit -m \"{suggestedCommit}\"";
-            EditorGUIUtility.systemCopyBuffer = commandText;
-
-            var gitState = repoRoot == null
-                ? "git repository was not detected from the Unity project root upward."
-                : ReadGitStatus(repoRoot);
-
-            EditorUtility.DisplayDialog(
-                "Commit Goblin",
-                "Saved open scenes and assets.\n\n" +
-                "Copied to clipboard:\n" +
-                commandText + "\n\n" +
-                gitState,
-                "I Will Version My Sins");
-
-            Snooze();
+            RandomizeColor();
+            OpenTerminal();
         }
 
-        private static void SaveEverything()
+        private static void RandomizeColor()
         {
-            EditorSceneManager.SaveOpenScenes();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            s_CurrentColor = Color.HSVToRGB(UnityEngine.Random.value, 0.8f, 1f);
+            MainToolbar.Refresh(ToolbarPath);
         }
 
-        private static bool AnySceneDirty()
+        private static void ResetColor()
         {
-            for (var i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            s_CurrentColor = new Color(0.28f, 0.82f, 0.45f, 1f);
+            MainToolbar.Refresh(ToolbarPath);
+        }
+
+        private static void OpenTerminal()
+        {
+            var workingDirectory = GetProjectRootPath();
+
+            if (TryOpenWindowsTerminal(workingDirectory))
             {
-                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
-                if (scene.IsValid() && scene.isDirty)
-                {
-                    return true;
-                }
+                return;
             }
 
-            return false;
+            TryOpenPowerShell(workingDirectory);
+        }
+
+        private static bool TryOpenWindowsTerminal(string workingDirectory)
+        {
+            try
+            {
+                using var process = new Process();
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "wt.exe",
+                    Arguments = $"-d \"{workingDirectory}\"",
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = true
+                };
+
+                return process.Start();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryOpenPowerShell(string workingDirectory)
+        {
+            try
+            {
+                using var process = new Process();
+                var escapedPath = workingDirectory.Replace("'", "''");
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoExit -Command \"Set-Location -LiteralPath '{escapedPath}'\"",
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = true
+                };
+
+                return process.Start();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string GetProjectRootPath()
+        {
+            return Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
         }
 
         private static string TryFindGitRoot()
         {
-            var directory = new DirectoryInfo(Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath);
+            var directory = new DirectoryInfo(GetProjectRootPath());
             while (directory != null)
             {
                 if (Directory.Exists(Path.Combine(directory.FullName, ".git")))
@@ -295,20 +241,6 @@ namespace RainbowCommitNag.Editor
             {
                 return $"git: {exception.GetType().Name}";
             }
-        }
-
-        private static string SuggestCommitMessage()
-        {
-            var messages = new[]
-            {
-                "Save progress before the goblin unionizes",
-                "Checkpoint before reality forks",
-                "Record editor progress",
-                "Save and checkpoint changes"
-            };
-
-            var index = DateTime.Now.Minute % messages.Length;
-            return messages[index];
         }
 
         private static void Cleanup()
