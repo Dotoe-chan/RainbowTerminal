@@ -1,5 +1,5 @@
 <p align="center">
-<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/d26556ab-f823-458c-8ed8-3dc55b7b4863" />
+<img width="640" height="240" alt="Rain1" src="https://github.com/user-attachments/assets/2dab77b1-453a-42f6-bbcc-6680ec5a20ba" />
 </p>
 
 You want English? see [README.md](./README.md) 
