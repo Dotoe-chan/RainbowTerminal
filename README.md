@@ -1,46 +1,48 @@
 # RainbowTerminal
 
-Unity 6 のメインツールバーに `terminal` ボタンを追加する Editor 拡張です。
+`RainbowTerminal` is a Unity 6 editor extension that adds a `terminal` button to the main toolbar.
 
 ## Features
 
-- Unity Editor のメインツールバーにボタンを追加
-- クリックで現在の Unity プロジェクト root に terminal を開く
-- `wt.exe` が使えない場合は PowerShell にフォールバック
-- クリックごとにアイコン色をランダム変更
-- Unity Editor の表示言語に応じて文言を切り替え
-- Unity 公式の `MainToolbar` API を使用
+- Adds a button to the Unity Editor main toolbar
+- Opens a terminal at the current Unity project root when clicked
+- Falls back to PowerShell if `wt.exe` is not available
+- Randomizes the icon color on each click
+- Uses the Unity Editor display language for labels
+- Uses Unity's supported `MainToolbar` API
 
 ## Requirements
 
 - Unity 6
 - Windows
-- Windows Terminal (`wt.exe`) または PowerShell
+- Windows Terminal (`wt.exe`) or PowerShell
 
 ## Installation
 
-Git submodule として追加します。
+Add this repository as a Git submodule:
 
 ```bash
 git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodules/RainbowTerminal
 ```
 
-追加後に Unity で `Assets > Refresh` を実行してください。表示されない場合は Unity を再起動してください。
+After adding it, run `Assets > Refresh` in Unity.
+If the button does not appear, restart the Unity Editor.
 
 ## Behavior
 
-- ツールバーに `terminal` または `ターミナル` ボタンを表示します
-- クリックで現在開いている Unity プロジェクトの root に terminal を開きます
-- まず `wt.exe -d "<project path>"` を試し、失敗したら PowerShell にフォールバックします
-- 右クリックメニューから `Open Terminal` も実行できます
+- Shows `terminal` in English or `ターミナル` in Japanese
+- Opens a terminal at the currently open Unity project root
+- Tries `wt.exe -d "<project path>"` first
+- Falls back to PowerShell if Windows Terminal cannot be launched
+- Also exposes `Open Terminal` in the context menu
 
 ## Localization
 
-表示文言は Unity Editor の表示言語に合わせて切り替わります。
+Displayed text follows the Unity Editor language.
 
-- ローカライズ呼び出し: `UnityEditor.L10n.Tr(...)`
-- 日本語翻訳ファイル: `Editor/ja.po`
-- アセンブリ属性: `Editor/AssemblyInfo.cs`
+- Localization calls: `UnityEditor.L10n.Tr(...)`
+- Japanese translation file: `Editor/ja.po`
+- Assembly attribute: `Editor/AssemblyInfo.cs`
 
 ## Files
 
@@ -51,16 +53,16 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 
 ## Notes
 
-- Editor 専用です
-- Windows 向け実装です
-- Unity の正式なメインツールバー拡張 API を使っています
-- ボタン背景の自由なスタイル変更や複数画像の自由レイアウトはしていません
+- Editor only
+- Windows only
+- Uses Unity's supported main toolbar extension API
+- Does not implement arbitrary background styling or freeform multi-image layout inside the button
 
 ## Troubleshooting
 
-- ボタンが出ない場合は `Assets > Refresh` を実行してください
-- それでも出ない場合は Unity を再起動してください
-- asmdef 名が他の拡張と重複していないか確認してください
+- If the button does not appear, run `Assets > Refresh`
+- If it still does not appear, restart Unity
+- Make sure the asmdef name does not conflict with another extension
 
 ## License
 
