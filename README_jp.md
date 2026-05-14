@@ -6,7 +6,7 @@ You want English? see [README.md](./README.md)
 
 `RainbowTerminal` は、Unity 6 のメインツールバーに `terminal` ボタンを追加する Editor 拡張です。
 
-## Features
+## 機能
 
 - Unity Editor のメインツールバーにボタンを追加
 - クリックで現在開いている Unity プロジェクト root に terminal を開く
@@ -17,13 +17,13 @@ You want English? see [README.md](./README.md)
 
 ※ 「れいんぼー」な要素はアイコン色がランダム変更するのみです
 
-## Requirements
+## 環境
 
 - Unity 6
 - Windows
 - Windows Terminal (`wt.exe`) または PowerShell
 
-## Installation
+## 導入
 
 ### Unity Package Manager から追加する場合:
 
@@ -56,7 +56,7 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 表示されない場合は Unity Editor を再起動してください。
 
 
-## Behavior
+## 仕様
 
 - 英語環境では `terminal`、日本語環境では `ターミナル` と表示
 - クリックで現在開いている Unity プロジェクト root に terminal を開く
@@ -64,7 +64,7 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 - Windows Terminal を起動できない場合は PowerShell にフォールバック
 - 右クリックメニューから `Open Terminal` も実行可能
 
-## Localization
+## 言語
 
 表示文言は Unity Editor の表示言語に追従します。
 
@@ -72,7 +72,7 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 - 日本語翻訳ファイル: `Editor/ja.po`
 - アセンブリ属性: `Editor/AssemblyInfo.cs`
 
-## Files
+## ファイル
 
 - `package.json`
 - `Editor/RainbowCommitHeaderButton.cs`
@@ -80,19 +80,18 @@ git submodule add https://github.com/Dotoe-chan/RainbowTerminal Assets/Submodule
 - `Editor/AssemblyInfo.cs`
 - `Editor/ja.po`
 
-## Notes
+## メモ
 
 - Editor 専用です
 - Windows 専用です
 - Unity の正式なメインツールバー拡張 API を使っています
-- ボタン内部の自由な背景スタイル変更や複数画像の自由配置はしていません
 
-## Troubleshooting
+## トラブルシューティング
 
 - ボタンが表示されない場合は `Assets > Refresh` を実行してください
 - それでも表示されない場合は Unity を再起動してください
 - asmdef 名が他の拡張と衝突していないか確認してください
 
-## License
+## ライセンス
 
 MIT
